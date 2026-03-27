@@ -2,7 +2,8 @@ import CardProvider from '@/store/context'
 import { useFetch } from '@/lib/hooks/useFetch'
 import { fetchCards } from '@/api'
 import type { ICard } from '@/types'
-import { CardList } from '@/components'
+import { CardList, TransactionsPanel } from '@/components'
+
 import styles from './PaymentsPage.module.css'
 
 function PaymentsPage() {
@@ -21,7 +22,7 @@ function PaymentsPage() {
           <CardList cards={cards || []} />
         </aside>
         <main className={styles.main}>
-          <h2 className={styles.sidebarTitle}>payments</h2>
+          <TransactionsPanel />
         </main>
       </div>
     </CardProvider>

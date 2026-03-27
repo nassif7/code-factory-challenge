@@ -1,0 +1,15 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.title {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #999;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
