@@ -7,7 +7,12 @@ import { ErrorBoundary } from '@/lib/components'
 async function enableMocking() {
   if (import.meta.env.DEV) {
     const { worker } = await import('./mocks/browser')
-    return worker.start()
+    return worker.start({ onUnhandledRequest: 'bypass' })
+  }
+
+  if ('serviceWorker' in navigator) {
+    const registrations = await navigator.serviceWorker.getRegistrations()
+    await Promise.all(registrations.map((r) => r.unregister()))
   }
 }
 

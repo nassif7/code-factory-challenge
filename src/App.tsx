@@ -1,15 +1,16 @@
-import { useFetch } from '@/lib/hooks'
-import { fetchCards } from '@/api'
+import { lazy, Suspense } from 'react'
 import styles from './App.module.css'
-import { PaymentsPage } from '@/pages'
+import { Loading } from '@/lib/components'
+
+const PaymentsPage = lazy(() => import('@/pages/PaymentsPage/PaymentsPage'))
 
 function App() {
-  const { data, loading, error } = useFetch(fetchCards)
-  console.log(data, loading, error)
   return (
     <div className={styles.App}>
       <h1>Cards & Transactions</h1>
-      <PaymentsPage />
+      <Suspense fallback={<Loading />}>
+        <PaymentsPage />
+      </Suspense>
     </div>
   )
 }
