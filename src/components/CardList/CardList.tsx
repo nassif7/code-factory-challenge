@@ -16,7 +16,7 @@ export default function CardList({ cards }: CardListProps) {
   const { selectedCard, selectCard } = useCardContext()
 
   return (
-    <section role="listbox" aria-label="Payment cards">
+    <section role="listbox" aria-label="Payment cards" style={{ display: 'contents' }}>
       {cards.map((card) => (
         <CardItem key={card.id} card={card} isSelected={card.id === selectedCard?.id} onSelect={selectCard} />
       ))}
