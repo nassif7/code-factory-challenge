@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { ICard } from '@/types'
+import { TCardType } from '@/types'
 import styles from './CardItem.module.css'
 import { RevealIcon } from '@/lib/components'
 
@@ -9,13 +10,11 @@ interface CardItemProps {
   onSelect: (card: ICard) => void
 }
 
-export type TCardType = 'Private Card' | 'Business Card'
-
 function CardItem({ card, isSelected, onSelect }: CardItemProps) {
   const [revealed, setRevealed] = useState(false)
   const lastFour = card.id.slice(-4)
   const masked = card.id.slice(0, -4).replace(/./g, '•') + lastFour
-  const typeClass = card.description === 'Private Card' ? styles.private : styles.business
+  const typeClass = card.description === TCardType.Private ? styles.private : styles.business
   const selectedClass = isSelected ? styles.selected : ''
 
   function handleReveal(e: React.MouseEvent) {

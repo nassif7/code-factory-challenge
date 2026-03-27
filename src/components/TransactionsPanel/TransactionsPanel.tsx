@@ -3,11 +3,12 @@ import { useCardContext } from '@/store/context'
 import { useFetch } from '@/lib/hooks/useFetch'
 import { fetchTransactionsByCard } from '@/api'
 import type { ITransaction } from '@/types'
+import { TCardType } from '@/types'
 import TransactionList from '@/components/TransactionList/TransactionList'
 import styles from './TransactionsPanel.module.css'
-import { AmountFilter } from '@/lib/components'
+import { AmountFilter, Loading, ErrorMessage } from '@/lib/components'
 
-function TransactionsFetch({ cardId }: { cardId: string }) {
+function TransactionsFetch({ cardId, cardDescription }: { cardId: string; cardDescription: string }) {
   const { amountFilter, setAmountFilter } = useCardContext()
   const fetchFn = useCallback(() => fetchTransactionsByCard(cardId), [cardId])
 
@@ -18,11 +19,13 @@ function TransactionsFetch({ cardId }: { cardId: string }) {
     return (transactions ?? []).filter((tx) => Math.abs(tx.amount) >= amountFilter)
   }, [transactions, amountFilter])
 
-  if (loading) return <p>Loading...</p>
-  if (error) return <p>Error: {error}</p>
+  const accentColor = cardDescription === TCardType.Private ? '#2095d4' : '#555'
+
+  if (loading) return <Loading />
+  if (error) return <ErrorMessage message={error} />
 
   return (
-    <div className={styles.content}>
+    <div className={styles.content} style={{ '--card-accent': accentColor } as React.CSSProperties}>
       <h2 className={styles.title}>Transactions</h2>
       <AmountFilter value={amountFilter} onChange={setAmountFilter} />
       <TransactionList transactions={filtered} />
@@ -33,5 +36,5 @@ function TransactionsFetch({ cardId }: { cardId: string }) {
 export default function TransactionsPanel() {
   const { selectedCard } = useCardContext()
   if (!selectedCard) return null
-  return <TransactionsFetch cardId={selectedCard.id} />
+  return <TransactionsFetch cardId={selectedCard.id} cardDescription={selectedCard.description} />
 }

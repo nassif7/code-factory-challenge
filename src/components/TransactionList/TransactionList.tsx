@@ -7,7 +7,7 @@ interface TransactionListProps {
   transactions: ITransaction[]
 }
 
-const ROW_HEIGHT = 58
+const ROW_HEIGHT = 64
 const LIST_STYLE = { flex: 1, height: '100%' }
 
 interface RowProps {
@@ -16,7 +16,7 @@ interface RowProps {
 
 function Row({ index, style, transactions }: RowComponentProps<RowProps>) {
   return (
-    <div style={style}>
+    <div style={{ ...style, paddingBottom: 10 }}>
       <TransactionItem transaction={transactions[index]} />
     </div>
   )

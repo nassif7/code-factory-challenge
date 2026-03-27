@@ -2,29 +2,28 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.875rem 1rem;
-  border-radius: 10px;
+  padding: 0 1rem;
+  height: calc(100% - 10px);
   background: #fff;
-  border: 1px solid #efefef;
-  transition: background 0.15s ease;
-}
-
-.item:hover {
-  background: #fafafa;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-left: 5px solid var(--card-accent, #ccc);
+  border-radius: 6px;
 }
 
 .description {
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   color: #1a1a1a;
+  font-weight: 500;
 }
 
 .amount {
   font-family: 'Space Mono', monospace;
-  font-size: 0.85rem;
-  font-weight: 400;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #1a1a1a;
 }
 
 .credit {
-  color: #27ae60;
-  font-weight: 700;
+  color: #1a6e3f;
+  font-weight: 600;
 }
