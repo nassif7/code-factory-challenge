@@ -3,6 +3,7 @@ import { useFetch } from '@/lib/hooks/useFetch'
 import { fetchCards } from '@/api'
 import type { ICard } from '@/types'
 import { CardList, TransactionsPanel } from '@/components'
+import { Loading, ErrorMessage, ErrorBoundary } from '@/lib/components'
 
 import styles from './PaymentsPage.module.css'
 
@@ -11,19 +12,23 @@ function PaymentsPage() {
 
   console.log(cards, loading, error)
 
-  if (loading) return <p>Loading </p>
-  if (error) return <p>Error: {error}</p>
+  if (loading) return <Loading />
+  if (error) return <ErrorMessage message={error} />
 
   return (
     <CardProvider>
       <div className={styles.layout}>
         <aside className={styles.sidebar}>
           <h2 className={styles.sidebarTitle}>Cards</h2>
-          <CardList cards={cards || []} />
+          <ErrorBoundary>
+            <CardList cards={cards || []} />
+          </ErrorBoundary>
         </aside>
-        <main className={styles.main}>
-          <TransactionsPanel />
-        </main>
+        <ErrorBoundary>
+          <main className={styles.main}>
+            <TransactionsPanel />
+          </main>
+        </ErrorBoundary>
       </div>
     </CardProvider>
   )
