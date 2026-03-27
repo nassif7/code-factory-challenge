@@ -1,89 +1,128 @@
-# Cards & Transactions Overview – Frontend Exercise
+# Cards & Transactions
 
-This exercise is a small frontend application that simulates a banking-style overview page.
+A banking-style overview page built with React and TypeScript. Users can view payment cards, select one, and inspect its transactions — with an amount filter that resets on card change.
 
-The goal is to build a page where a user can view payment cards, select one of them, and inspect its transactions. The user must also be able to filter the transactions by amount.
+---
 
-A rough interface sketch is included in the repository to illustrate the intended layout and interaction. The design is only guidance — a pixel-perfect implementation is **not required**.
-
-**Expected time investment:** ~4 hours
-
-![image](docs/cardTransactionDesigns.png)
-
-
-## Functional Requirements
-
-### Card Selection
-
-* Display a list of payment cards
-* The user can select one of the cards
-* The selected card becomes the active context of the page
-
-### Transactions
-
-* When a card is selected, show the transactions belonging to that card
-* The transactions should visually relate to the selected card (for example: matching background color or another clear visual connection)
-
-### Filtering
-
-* A numeric filter field must exist between the cards and the transactions list
-* The user can enter an amount
-* Only transactions with an amount **greater than or equal to** the entered value remain visible
-* When the user switches to another card, the filter input resets
-
-## Technical Setup
-
-Use the framework relevant to the role you applied for (e.g. React, Vue, etc.).
-
-You may:
-
-* use the included starter project, or
-* create your own setup from scratch
-
-You are free to add any libraries you consider appropriate (state management, routing, testing tools, UI helpers, etc.).
-
-If you use the starter project:
+## Getting Started
 
 ```bash
-yarn
+yarn          # install dependencies
+yarn dev      # start dev server (MSW mocking active)
+yarn test     # run tests
+yarn build    # production build
 ```
 
-## Data Source
+---
 
-The repository contains example data inside `src/data` as JSON files.
+## Approach
 
-You may use this data as the backing data for the application.
-However, the application should be implemented as if the data were loaded from an external API rather than directly from static imports.
+### Design & UI
 
-In other words, structure your solution so that replacing the local data with real network requests would not require major changes to the application architecture.
+The layout is split into two panels: a sidebar for card selection and a main panel for transactions.
 
-## General Expectations
+Cards are styled after real payment cards, masked card numbers with a reveal toggle, and a colored right border to indicate the active selection.
 
-We are interested in how you approach implementing a feature in a small application.
+Transactions are rendered in a virtualized list (`react-window`) so the UI remains smooth with large datasets. Each transaction row shows a left border matching the selected card's color.
 
-If you complete the core requirements early, you are welcome to extend the solution further or refine parts of the implementation. Additional improvements are optional and should not be necessary to submit a valid solution.
+### Architecture
 
-### Junior
+The project follows a two-tier component structure:
 
-A working implementation that follows the described behavior and is reasonably understandable.
+**`src/lib/`** reusable, context free building blocks, hooks, generic UI components.
+Nothing in here knows about cards or transactions.
 
-### Mid-Level
+**`src/components/`** feature components that are project-specific, These consume context and business types.
 
-A well-structured and maintainable solution with clear organization and thoughtful implementation choices.
+**`src/pages/`** page level layout and data orchestration. `PaymentsPage` fetches cards, sets up providers, and composes the layout.
 
-### Senior
+This separation means the lib folder stays portable and testable in isolation, while the feature components stay focused on product logic.
 
-A solution that reflects engineering maturity and consideration for long-term maintainability and scalability.
+---
 
-## What to Include in Your Submission
+## Key Technical Decisions
 
-Please provide:
+### API mocking with MSW
 
-* the full source code
-* a short `README` explaining:
+Using [MSW (Mock Service Worker)](https://mswjs.io/) to intercept real `fetch` calls at the network level rather than mocking the API module directly. This means the application code runs exactly as it would in production. Swapping from mock to real API only requires updating `VITE_API_BASE_URL` in the environment file; no application code changes.
 
-  * how to run the project
-  * assumptions or tradeoffs you made
-  * what you would improve with more time
+MSW also integrates cleanly into Vitest for tests, giving us the same interception behavior in both dev and test environments.
 
-The goal of this exercise is to understand your technical decisions and development approach when implementing a real feature.
+---
+
+### Environment variables
+
+The API base URL lives in `.env.development` (and would live in `.env.production` for a real deployment). This keeps environment specific config out of code.
+
+---
+
+## Data, Store & API
+
+**Types** (`src/types/`) define the shape of domain data (`ICard`, `ITransaction`, `TCardType`). These are the single source of truth shared across API, store, and components.
+
+**API layer** (`src/api/`) contains plain async functions that call `fetch`. just functions that throw on error. Easy to test, easy to replace.
+
+**useFetch** (`src/lib/hooks/useFetch.ts`) is a generic hook that wraps any async function with `loading`/`data`/`error` state. It takes a memoized function reference as input (`useCallback` upstream).
+
+**Store** (`src/store/`) uses React's `useReducer` and `createContext` pattern. The context exposes `selectedCard`, `amountFilter`, and action dispatchers. Values are memoized with `useMemo` to prevent unnecessary re-renders.
+
+**Data flow:**
+
+```
+PaymentsPage
+  ↓ fetchCards (useFetch)
+  ↓ CardProvider (context)
+    ↓ CardList → CardItem (select card → dispatch SELECT_CARD)
+    ↓ TransactionsPanel
+        ↓ fetchTransactionsByCard (useFetch, re-runs on cardId change)
+        ↓ filter by amountFilter (useMemo, no re-fetch)
+        ↓ TransactionList (virtualized)
+```
+
+---
+
+### Context API over a state library
+
+The app's shared state is small and localized, which card is selected and what the amount filter is.
+Using Redux or Zustand for this would be significant overhead for very little benefit.
+
+---
+
+### CSS Modules over styled-components
+
+CSS Modules were chosen for a few reasons:
+
+- **No runtime cost** styles are extracted at build time, unlike CSS-in-JS solutions that inject styles at runtime.
+- **Standard CSS** no new syntax to learn, full access to CSS features, and no dependency on a JS styling runtime.
+- **Performance** particularly relevant here since the transaction list renders many rows rapidly via virtualization
+
+---
+
+## Error Handling
+
+`ErrorBoundary` wraps both the cards section and the transactions panel independently. This means a crash in one panel does not take down the other. `useFetch` catches network errors and surfaces them via `ErrorMessage`. React rendering errors are caught by the boundary.
+
+---
+
+## What We Would Improve
+
+**Pagination / infinite scroll** currently all transactions are fetched at once. A real API would support pagination. would extend `useFetch` or write a `usePaginatedFetch` hook and load transactions in batches as the user scrolls down the virtualized list.
+
+**Real error messages** `useFetch` currently returns a generic `'Failed to fetch'` string. would parse API error responses and surface meaningful messages (e.g. card not found, unauthorized).
+
+**Optimistic UI / caching** selecting a previously viewed card re-fetches transactions. A simple cache keyed by `cardId` would make switching cards instant after the first load.
+
+**Accessibility** the card list uses `role="listbox"` and `aria-selected` but full keyboard navigation (arrow keys, Enter to select) is not implemented. The transaction list would also benefit from `aria-live` announcements when filtered results change.
+
+**Tests** the API layer and `useFetch` hook have test coverage. Component tests for `CardItem` and `TransactionItem` exist but `TransactionsPanel` and the filter interaction are not covered. We would add integration tests covering the full card → filter → transaction flow.
+
+**Internationalisation** currency is hardcoded to EUR and the locale to `en-US`. These should come from user context or configuration.
+
+**Card type system** the current data does not include an explicit card type field, so we infer type from the `description` string (e.g. `"Private Card"`) and match it to styles manually. This is fragile. If the API were to provide a proper `type` field, we would model this as a typed const map, each card type would declare its accent color, gradient, and any other visual properties in one place. That config would be passed through context so any component can read the correct style for the active card without prop drilling or string matching.
+
+```ts
+const CardTypeConfig = {
+  private: { accent: '#2095d4', gradient: '...' },
+  business: { accent: '#1a1a1a', gradient: '...' },
+} as const
+```
