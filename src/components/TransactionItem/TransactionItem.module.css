@@ -23,6 +23,16 @@
   color: #1a1a1a;
 }
 
+@media (max-width: 768px) {
+  .description {
+    font-size: 0.8rem;
+  }
+
+  .amount {
+    font-size: 0.75rem;
+  }
+}
+
 .credit {
   color: #1a6e3f;
   font-weight: 600;

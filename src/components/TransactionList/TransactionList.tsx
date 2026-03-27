@@ -7,8 +7,10 @@ interface TransactionListProps {
   transactions: ITransaction[]
 }
 
-const ROW_HEIGHT = 64
 const LIST_STYLE = { flex: 1, height: '100%' }
+const isMobile = () => window.matchMedia('(max-width: 768px)').matches
+const ROW_HEIGHT = isMobile() ? 50 : 64
+const ROW_GAP = isMobile() ? 6 : 10
 
 interface RowProps {
   transactions: ITransaction[]
@@ -16,7 +18,7 @@ interface RowProps {
 
 function Row({ index, style, transactions }: RowComponentProps<RowProps>) {
   return (
-    <div style={{ ...style, paddingBottom: 10 }}>
+    <div style={{ ...style, paddingBottom: ROW_GAP }}>
       <TransactionItem transaction={transactions[index]} />
     </div>
   )

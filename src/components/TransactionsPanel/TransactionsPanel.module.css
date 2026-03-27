@@ -13,3 +13,10 @@
   text-transform: uppercase;
   margin-bottom: 1rem;
 }
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 0.65rem;
+    margin-bottom: 0.5rem;
+  }
+}
