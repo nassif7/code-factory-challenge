@@ -1,6 +1,8 @@
 # Cards & Transactions
 
-A banking-style overview page built with React and TypeScript. Users can view payment cards, select one, and inspect its transactions — with an amount filter that resets on card change.
+A banking style overview page built with React and TypeScript. Users can view payment cards, select one, and inspect its transactions with an amount filter that resets on card change.
+
+![image](docs/CardTransactionsImplementation.png)
 
 ---
 
@@ -27,16 +29,25 @@ Transactions are rendered in a virtualized list (`react-window`) so the UI remai
 
 ### Architecture
 
-The project follows a two-tier component structure:
+The project follows a two tier component structure:
 
 **`src/lib/`** reusable, context free building blocks, hooks, generic UI components.
 Nothing in here knows about cards or transactions.
 
-**`src/components/`** feature components that are project-specific, These consume context and business types.
+**`src/components/`** feature components that are project specific, These consume context and business types.
 
 **`src/pages/`** page level layout and data orchestration. `PaymentsPage` fetches cards, sets up providers, and composes the layout.
 
 This separation means the lib folder stays portable and testable in isolation, while the feature components stay focused on product logic.
+
+---
+
+## Assumptions
+
+- **No default selection** no card is selected on load. The transactions panel remains empty until the user picks a card.
+- **Visual connection via accent color** the brief says transactions should "visually relate to the selected card". this implemented as a colored left border on each transaction row matching the card's accent color, rather than a full background tint, to keep the list readable.
+- **Filter applies to absolute amount** transaction amounts can be negative (refunds/reversals) or positive (charges). We assume negative amounts represent refunds rather than a separate transaction type. The filter threshold is applied to the absolute value so that a refund of -€200 and a charge of €200 are treated equally both are visible when filtering at €200 or below.
+- **Card type inferred from description** the API data has no explicit type field. Card type (`Private` / `Business`) is inferred from the `description` string. This is a known fragility, noted in the improvements section.
 
 ---
 
@@ -64,19 +75,14 @@ The API base URL lives in `.env.development` (and would live in `.env.production
 
 **useFetch** (`src/lib/hooks/useFetch.ts`) is a generic hook that wraps any async function with `loading`/`data`/`error` state. It takes a memoized function reference as input (`useCallback` upstream).
 
-**Store** (`src/store/`) uses React's `useReducer` and `createContext` pattern. The context exposes `selectedCard`, `amountFilter`, and action dispatchers. Values are memoized with `useMemo` to prevent unnecessary re-renders.
+**Store** (`src/store/`) uses React's `useReducer` and `createContext` pattern. The context exposes `selectedCard`, `amountFilter`, and action dispatchers. Values are memoized with `useMemo` to prevent unnecessary rerenders.
 
 **Data flow:**
 
 ```
-PaymentsPage
-  ↓ fetchCards (useFetch)
-  ↓ CardProvider (context)
-    ↓ CardList → CardItem (select card → dispatch SELECT_CARD)
-    ↓ TransactionsPanel
-        ↓ fetchTransactionsByCard (useFetch, re-runs on cardId change)
-        ↓ filter by amountFilter (useMemo, no re-fetch)
-        ↓ TransactionList (virtualized)
+- PaymentsPage → fetchCards (useFetch) → CardProvider (context)
+-- CardList → CardItem → dispatch SELECT_CARD
+----TransactionsPanel → fetchTransactionsByCard (useFetch) → amountFilter (useMemo) → TransactionList (virtualized)
 ```
 
 ---
@@ -92,7 +98,7 @@ Using Redux or Zustand for this would be significant overhead for very little be
 
 CSS Modules were chosen for a few reasons:
 
-- **No runtime cost** styles are extracted at build time, unlike CSS-in-JS solutions that inject styles at runtime.
+- **No runtime cost** styles are extracted at build time, unlike CSS in JS solutions that inject styles at runtime.
 - **Standard CSS** no new syntax to learn, full access to CSS features, and no dependency on a JS styling runtime.
 - **Performance** particularly relevant here since the transaction list renders many rows rapidly via virtualization
 
@@ -110,9 +116,7 @@ CSS Modules were chosen for a few reasons:
 
 **Real error messages** `useFetch` currently returns a generic `'Failed to fetch'` string. would parse API error responses and surface meaningful messages (e.g. card not found, unauthorized).
 
-**Optimistic UI / caching** selecting a previously viewed card re-fetches transactions. A simple cache keyed by `cardId` would make switching cards instant after the first load.
-
-**Accessibility** the card list uses `role="listbox"` and `aria-selected` but full keyboard navigation (arrow keys, Enter to select) is not implemented. The transaction list would also benefit from `aria-live` announcements when filtered results change.
+**Optimistic UI / caching** selecting a previously viewed card refetches transactions. A simple cache keyed by `cardId` would make switching cards instant after the first load.
 
 **Tests** the API layer and `useFetch` hook have test coverage. Component tests for `CardItem` and `TransactionItem` exist but `TransactionsPanel` and the filter interaction are not covered. We would add integration tests covering the full card → filter → transaction flow.
 
@@ -126,3 +130,5 @@ const CardTypeConfig = {
   business: { accent: '#1a1a1a', gradient: '...' },
 } as const
 ```
+
+**Amount filter is client-side only** the current `amountFilter` works entirely on data that is already in memory, it filters the fetched transactions locally via `useMemo`, with no API involvement. This is fine for the current dataset size, but with a real paginated API there would be transactions the client has never seen. The proper improvement would be to push the filter down to the API as a query parameter (e.g. `GET /transactions?cardId=x&maxAmount=500`), so the server does the filtering and only matching results are returned. This could also be reflected in the URL as a search param so the filtered state is shareable and survives a page refresh.
