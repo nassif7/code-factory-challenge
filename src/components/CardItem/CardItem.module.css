@@ -1,0 +1,59 @@
+.article {
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 1.586;
+  border-radius: 14px;
+  padding: 20px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  border: 3px solid transparent;
+  background: #000;
+  transition:
+    border-color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.article:hover {
+  opacity: 0.85;
+}
+
+.cardBottom {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.cardNumberRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 8px;
+}
+
+.cardNumber {
+  font-family: 'Space Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.cardDescription {
+  font-size: 15px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.95);
+  letter-spacing: 0.03em;
+}
+
+@media (max-width: 768px) {
+  .article {
+    width: 80vw;
+    min-width: 80vw;
+    scroll-snap-align: center;
+    flex-shrink: 0;
+  }
+}
