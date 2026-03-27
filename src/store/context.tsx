@@ -4,9 +4,9 @@ import { reducer, initialState } from './reducer'
 
 interface ICardContext {
   selectedCard: ICard | null
-  filterAmount: number | null
+  amountFilter: number | null
   selectCard: (card: ICard) => void
-  setFilterAmount: (value: number | null) => void
+  setAmountFilter: (value: number | null) => void
 }
 
 const CardContext = createContext<ICardContext | null>(null)
@@ -18,19 +18,19 @@ export function useCardContext(): ICardContext {
 }
 
 function CardProvider({ children }: { children: React.ReactNode }) {
-  const [{ selectedCard, filterAmount }, dispatch] = useReducer(reducer, initialState)
+  const [{ selectedCard, amountFilter }, dispatch] = useReducer(reducer, initialState)
 
   const selectCard = useCallback((card: ICard) => {
     dispatch({ type: 'SELECT_CARD', payload: card })
   }, [])
 
-  const setFilterAmount = useCallback((value: number | null) => {
+  const setAmountFilter = useCallback((value: number | null) => {
     dispatch({ type: 'SET_FILTER_AMOUNT', payload: value })
   }, [])
 
   const value = useMemo(
-    () => ({ selectedCard, filterAmount, selectCard, setFilterAmount }),
-    [selectedCard, filterAmount, selectCard, setFilterAmount],
+    () => ({ selectedCard, amountFilter, selectCard, setAmountFilter }),
+    [selectedCard, amountFilter, selectCard, setAmountFilter],
   )
 
   return <CardContext.Provider value={value}>{children}</CardContext.Provider>

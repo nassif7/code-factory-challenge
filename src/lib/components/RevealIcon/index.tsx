@@ -1,8 +1,8 @@
 function RevealIcon({ open }: { open: boolean }) {
   return open ? (
     <svg
-      width="15"
-      height="15"
+      width="18"
+      height="18"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -15,8 +15,8 @@ function RevealIcon({ open }: { open: boolean }) {
     </svg>
   ) : (
     <svg
-      width="15"
-      height="15"
+      width="18"
+      height="18"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"

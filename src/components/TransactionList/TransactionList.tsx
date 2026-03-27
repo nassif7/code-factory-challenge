@@ -7,7 +7,7 @@ interface TransactionListProps {
   transactions: ITransaction[]
 }
 
-const ROW_HEIGHT = 64
+const ROW_HEIGHT = 58
 const LIST_STYLE = { flex: 1, height: '100%' }
 
 interface RowProps {

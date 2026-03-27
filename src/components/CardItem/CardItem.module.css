@@ -43,14 +43,14 @@
   border: none;
   padding: 0;
   cursor: pointer;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(0, 0, 0, 0.35);
   display: flex;
   align-items: center;
   transition: color 0.15s ease;
 }
 
 .revealButton:hover {
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(0, 0, 0, 0.7);
 }
 
 .cardBottom {
@@ -70,9 +70,9 @@
 
 .cardNumber {
   font-family: 'Space Mono', monospace;
-  font-size: 13px;
+  font-size: 15px;
   letter-spacing: 0.2em;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .cardDescription {

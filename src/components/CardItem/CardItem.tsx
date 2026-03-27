@@ -39,7 +39,7 @@ function CardItem({ card, isSelected, onSelect }: CardItemProps) {
             onClick={handleReveal}
             aria-label={revealed ? 'Hide card number' : 'Show card number'}
           >
-            <RevealIcon open={revealed} />
+            <RevealIcon open={!revealed} />
           </button>
         </div>
         <span className={styles.cardDescription}>{card.description}</span>
